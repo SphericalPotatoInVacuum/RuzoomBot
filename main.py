@@ -3,7 +3,7 @@ import telebot
 import os
 from flask import Flask, request
 from config import TOKEN, TIMETABLE, TZ
-from data_catcher import get_nearest_lesson
+from data_catcher import get_nearest_lesson, print_nearest_lesson
 import threading
 import datetime
 import arrow
@@ -31,7 +31,7 @@ def subscribe_chat(message):
 
 @bot.message_handler(commands=['getnext'])
 def send_nearest_lesson(message):
-    bot.send_message(message.chat.id, get_nearest_lesson())
+    bot.send_message(message.chat.id, print_nearest_lesson())
 
 
 @bot.message_handler(func=lambda m: True)
@@ -60,15 +60,9 @@ def check_timetable():
     for time in TIMETABLE:
         if now.shift(minutes=+10) > arrow.get(f'{date} {time}', 'YYYY-M-D HH:mm').replace(tzinfo=TZ) > now:
             cur = get_nearest_lesson()
-            cur_mes = f'Дисциплина: {cur["discipline"]}\n \
-                   День недели: {cur["dayOfWeekString"]}\n \
-                   Начало: {cur["beginLesson"]}\n \
-                   Ссылка: {cur["url1"]}'
-            if len(cur) == 0:
-                cur_mes = 'Пар нет - иди спать!1!1!!!1!'
-            if now.shift(minutes=+10) > arrow.get(f'{date} {cur["Начало"]}', 'YYYY-M-D HH:mm').replace(tzinfo=TZ) > now:
+            if now.shift(minutes=+10) >= arrow.get(f'{cur["date"]} {cur["beginLesson"]}', 'YYYY.M.D HH:mm').replace(tzinfo=TZ) > now:
                 for chat_id in chat_ids:
-                    bot.send_message(chat_id, cur_mes)
+                    bot.send_message(chat_id, print_nearest_lesson())
                 timeout = 700
 
     threading.Timer(timeout, check_timetable).start()

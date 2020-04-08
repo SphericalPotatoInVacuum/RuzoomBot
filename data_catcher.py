@@ -3,7 +3,6 @@ import arrow
 from config import ID1, ID2, TZ
 import logging
 
-
 def get_nearest_lesson():
     now = arrow.now(TZ)
     date_first = now.date()
@@ -17,9 +16,19 @@ def get_nearest_lesson():
         beginLesson = arrow.get(f'{cls["date"]} {cls["beginLesson"]}', 'YYYY.M.D HH:mm').replace(tzinfo=TZ)
 
         if now <= beginLesson:
-            return {'Дисциплина': cls["discipline"], \
-                    'День недели': cls["dayOfWeekString"], \
-                    'Начало': cls["beginLesson"], \
-                    'Ссылка': cls["url1"]}
+            return {'discipline': cls["discipline"], \
+                    'dayOfWeekString': cls["dayOfWeekString"], \
+                    'beginLesson': cls["beginLesson"], \
+                    'url1': cls["url1"],
+                    'date': cls["date"]}
 
     return {}
+
+def print_nearest_lesson():
+    cur = get_nearest_lesson()
+    if len(cur) == 0:
+        return 'Пар нет - иди спать!1!1!!!1!'
+    return f'Дисциплина: {cur["discipline"]}\n' \
+           f'День недели: {cur["dayOfWeekString"]}\n' \
+           f'Начало: {cur["beginLesson"]}\n' \
+           f'Ссылка: {cur["url1"]}'
