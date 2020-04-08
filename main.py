@@ -59,8 +59,16 @@ def check_timetable():
     date = now.date()
     for time in TIMETABLE:
         if now.shift(minutes=+10) > arrow.get(f'{date} {time}', 'YYYY-M-D HH:mm').replace(tzinfo=TZ) > now:
-            for chat_id in chat_ids:
-                bot.send_message(chat_id, get_nearest_lesson())
+            cur = get_nearest_lesson()
+            cur_mes = f'Дисциплина: {cur["discipline"]}\n \
+                   День недели: {cur["dayOfWeekString"]}\n \
+                   Начало: {cur["beginLesson"]}\n \
+                   Ссылка: {cur["url1"]}'
+            if len(cur) == 0:
+                cur_mes = 'Пар нет - иди спать!1!1!!!1!'
+            if now.shift(minutes=+10) > arrow.get(f'{date} {cur["Начало"]}', 'YYYY-M-D HH:mm').replace(tzinfo=TZ) > now:
+                for chat_id in chat_ids:
+                    bot.send_message(chat_id, cur_mes)
                 timeout = 700
 
     threading.Timer(timeout, check_timetable).start()

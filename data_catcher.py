@@ -17,9 +17,9 @@ def get_nearest_lesson():
         beginLesson = arrow.get(f'{cls["date"]} {cls["beginLesson"]}', 'YYYY.M.D HH:mm').replace(tzinfo=TZ)
 
         if now <= beginLesson:
-            return f'Дисциплина: {cls["discipline"]}\n' \
-                   f'День недели: {cls["dayOfWeekString"]}\n' \
-                   f'Начало: {cls["beginLesson"]}\n' \
-                   f'Ссылка: {cls["url1"]}'
+            return {'Дисциплина': cls["discipline"], \
+                    'День недели': cls["dayOfWeekString"], \
+                    'Начало': cls["beginLesson"], \
+                    'Ссылка': cls["url1"]}
 
-    return 'Пар нет - иди спать!1!1!!!1!'
+    return {}
