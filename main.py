@@ -6,6 +6,9 @@ from config import TOKEN
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
 
+logger = telebot.logger
+telebot.logger.setLevel(logging.INFO)
+
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
@@ -27,8 +30,8 @@ def get_message():
 def webhook():
     bot.remove_webhook()
     bot.set_webhook(url='https://ruzbot.herokuapp.com/' + TOKEN)
-    return '!', 200
+    return 'Hello world!', 200
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
