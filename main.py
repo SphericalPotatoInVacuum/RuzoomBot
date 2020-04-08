@@ -56,13 +56,14 @@ def check_timetable():
     date = now.date()
 
     for time in TIMETABLE:
-        print(now, datetime.datetime.strptime(f'{date} {time}', '%Y.%m.%d %H:%M'))
-        if now - datetime.datetime.strptime(f'{date} {time}', '%Y.%m.%d %H:%M')\
+        print(now, datetime.datetime.strptime(f'{date} {time} +03:00', '%Y-%m-%d %H:%M %Z'))
+        if now - datetime.datetime.strptime(f'{date} {time} +03:00', '%Y-%m-%d %H:%M %Z')\
                 + datetime.timedelta(minutes=10) < datetime.timedelta(seconds=5):
             for chat_id in chat_ids:
                 bot.send_message(chat_id, get_nearest_lesson())
 
 
+check_timetable()
+print(__name__ == '__main__')
 if __name__ == '__main__':
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
-    check_timetable()
