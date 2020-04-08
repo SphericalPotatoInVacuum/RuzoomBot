@@ -1,8 +1,10 @@
 import telebot
 import os
 from flask import Flask, request
-from config import TOKEN
+from config import TOKEN, TIMETABLE
 from data_catcher import get_nearest_lesson
+import threading
+import datetime
 
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
@@ -10,10 +12,18 @@ server = Flask(__name__)
 logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)
 
+chat_ids = []
+
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-    bot.reply_to(message, 'Howdy, how are you doing?')
+    bot.reply_to(message, 'Вы ввели help или start)0))0)))')
+
+
+@bot.message_handler(commands=['subscribe'])
+def subscribe_chat(message):
+    chat_ids.append(message.chat.id)
+    bot.send_message(message.chat.id, 'Теперь вы подписаны)0))00)))0)')
 
 
 @bot.message_handler(commands=['getnext'])
@@ -39,5 +49,19 @@ def webhook():
     return 'Hello world!', 200
 
 
+def check_timetable():
+    threading.Timer(5, check_timetable).start()
+
+    date = datetime.date.today()
+    now = datetime.datetime.now()
+
+    for time in TIMETABLE:
+        if now - datetime.datetime.strptime(f'{date} {time}', '%Y.%m.%d %H:%M')\
+                + datetime.timedelta(minutes=10) < datetime.timedelta(seconds=5):
+            for chat_id in chat_ids:
+                bot.send_message(chat_id, get_nearest_lesson())
+
+
 if __name__ == '__main__':
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+    check_timetable()
