@@ -1,20 +1,20 @@
 import requests
-import datetime
+import arrow
 from config import ID1, ID2, TZ
 import logging
 
 
 def get_nearest_lesson():
-    now = datetime.datetime.now(tz=TZ)
+    now = arrow.now(TZ)
     date_first = now.date()
-    date_second = date_first + datetime.timedelta(days=1)
+    date_second = now.shift(days=+1).date()
 
     r = requests.get(f'https://ruz.hse.ru/api/schedule/student/{ID1}?start={date_first.strftime("%Y.%m.%d")}'
                      f'&finish={date_second.strftime("%Y.%m.%d")}&lng=1')
     classes = r.json()
 
     for cls in classes:
-        beginLesson = datetime.datetime.strptime(f'{cls["date"]} {cls["beginLesson"]}', '%Y.%m.%d %H:%M')
+        beginLesson = arrow.get(f'{cls["date"]} {cls["beginLesson"]}', 'YYYY.M.D HH:mm').replace(tzinfo=TZ)
 
         if now <= beginLesson:
             return f'Дисциплина: {cls["discipline"]}\n' \

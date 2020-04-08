@@ -1,3 +1,4 @@
+import dateutil
 import telebot
 import os
 from flask import Flask, request
@@ -5,6 +6,8 @@ from config import TOKEN, TIMETABLE, TZ
 from data_catcher import get_nearest_lesson
 import threading
 import datetime
+import arrow
+from dateutil import tz
 
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
@@ -12,7 +15,7 @@ server = Flask(__name__)
 logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)
 
-chat_ids = []
+chat_ids = set()
 
 
 @bot.message_handler(commands=['start', 'help'])
@@ -22,7 +25,7 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['subscribe'])
 def subscribe_chat(message):
-    chat_ids.append(message.chat.id)
+    chat_ids.add(message.chat.id)
     bot.send_message(message.chat.id, 'Теперь вы подписаны)0))00)))0)')
 
 
@@ -50,17 +53,17 @@ def webhook():
 
 
 def check_timetable():
-    threading.Timer(5, check_timetable).start()
+    timeout = 5
 
-    now = datetime.datetime.now(tz=TZ)
+    now = arrow.now(TZ)
     date = now.date()
-
     for time in TIMETABLE:
-        print(now, datetime.datetime.strptime(f'{date} {time} +03:00', '%Y-%m-%d %H:%M %Z'))
-        if now - datetime.datetime.strptime(f'{date} {time} +03:00', '%Y-%m-%d %H:%M %Z')\
-                + datetime.timedelta(minutes=10) < datetime.timedelta(seconds=5):
+        if now.shift(minutes=+10) > arrow.get(f'{date} {time}', 'YYYY-M-D HH:mm').replace(tzinfo=TZ) > now:
             for chat_id in chat_ids:
                 bot.send_message(chat_id, get_nearest_lesson())
+                timeout = 700
+
+    threading.Timer(timeout, check_timetable).start()
 
 
 check_timetable()
