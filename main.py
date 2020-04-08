@@ -18,8 +18,7 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['getnext'])
 def send_nearest_lesson(message):
-    logging.info(str(message))
-    bot.send_message(message.chat_id, get_nearest_lesson())
+    bot.send_message(message.chat.id, get_nearest_lesson())
 
 
 @bot.message_handler(func=lambda m: True)
