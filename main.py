@@ -1,7 +1,7 @@
 import telebot
 import os
 from flask import Flask, request
-from config import TOKEN, TIMETABLE
+from config import TOKEN, TIMETABLE, TZ
 from data_catcher import get_nearest_lesson
 import threading
 import datetime
@@ -52,10 +52,11 @@ def webhook():
 def check_timetable():
     threading.Timer(5, check_timetable).start()
 
-    date = datetime.date.today()
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(tz=TZ)
+    date = now.date()
 
     for time in TIMETABLE:
+        print(now, datetime.datetime.strptime(f'{date} {time}', '%Y.%m.%d %H:%M'))
         if now - datetime.datetime.strptime(f'{date} {time}', '%Y.%m.%d %H:%M')\
                 + datetime.timedelta(minutes=10) < datetime.timedelta(seconds=5):
             for chat_id in chat_ids:

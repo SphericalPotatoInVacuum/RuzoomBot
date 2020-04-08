@@ -1,13 +1,13 @@
 import requests
 import datetime
-from config import ID1, ID2
+from config import ID1, ID2, TZ
 import logging
 
 
 def get_nearest_lesson():
-    date_first = datetime.date.today()
+    now = datetime.datetime.now(tz=TZ)
+    date_first = now.date()
     date_second = date_first + datetime.timedelta(days=1)
-    now = datetime.datetime.now()
 
     r = requests.get(f'https://ruz.hse.ru/api/schedule/student/{ID1}?start={date_first.strftime("%Y.%m.%d")}'
                      f'&finish={date_second.strftime("%Y.%m.%d")}&lng=1')
