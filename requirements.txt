@@ -1,4 +1,3 @@
 flask
-telebot
 pyTelegramBotAPI
 requests

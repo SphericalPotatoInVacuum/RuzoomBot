@@ -2,6 +2,7 @@ import telebot
 import os
 from flask import Flask, request
 from config import TOKEN
+from data_catcher import get_nearest_lesson
 
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
@@ -13,6 +14,12 @@ telebot.logger.setLevel(logging.INFO)
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
     bot.reply_to(message, 'Howdy, how are you doing?')
+
+
+@bot.message_handler(commands=['getnext'])
+def send_nearest_lesson(message):
+    logging.info(str(message))
+    bot.send_message(message.chat_id, get_nearest_lesson())
 
 
 @bot.message_handler(func=lambda m: True)
