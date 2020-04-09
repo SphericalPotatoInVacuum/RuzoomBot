@@ -5,7 +5,7 @@ import json
 
 import arrow
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, ConversationHandler
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, parsemode, ForceReply
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, parsemode, ForceReply, ReplyKeyboardRemove
 
 from config import TOKEN, TIMETABLE, TZ
 from data_catcher import get_nearest_lesson, print_nearest_lesson, get_students, get_groups
@@ -15,9 +15,9 @@ dispatcher = updater.dispatcher
 
 chat_ids = dict()
 
-with open('subscribed_chats.json', 'r') as ids_file:
-    data = json.load(ids_file)
-chat_ids = data
+#with open('subscribed_chats.json', 'r') as ids_file:
+   # data = json.load(ids_file)
+#chat_ids = data
 
 
 def start_help(update, context):
@@ -37,12 +37,12 @@ def subscribe_chat(update, context):
     return 'Вопрос'
 
 
-def subscribe(id, chat_id):
+def subscribe(t_id, chat_id):
     user_ids = chat_ids.get(chat_id, [])
-    if not id in user_ids:
-        chat_ids[chat_id] = user_ids + [id]
-    with open('subscribed_chats.json', 'w') as ids_file:
-        json.dump(list(chat_ids), ids_file)
+    if not t_id in user_ids:
+        chat_ids[chat_id] = user_ids + [t_id]
+  #  with open('subscribed_chats.json', 'w') as ids_file:
+   #     json.dump(list(chat_ids), ids_file)
 
 
 def send_nearest_lesson(update, context):
@@ -131,13 +131,13 @@ def check_timetable():
     date = now.date()
     for time in TIMETABLE:
         if now.shift(minutes=+10) > arrow.get(f'{date} {time}').replace(tzinfo=TZ) > now:
-            nearest_lesson = get_nearest_lesson()
-            if now.shift(minutes=+10) >= arrow.get(f'{nearest_lesson["date"]} '
-                                                   f'{nearest_lesson["beginLesson"]}').replace(tzinfo=TZ) > now:
-                for chat_id in chat_ids:
-                    updater.bot.send_message(
-                        chat_id=chat_id, text=print_nearest_lesson())
-                timeout = 700
+            for chat_id in chat_ids:
+                for user_id in chat_ids[chat_id]:
+                    nearest_lesson = get_nearest_lesson(user_id)
+                    if now.shift(minutes=+10) >= arrow.get(f'{nearest_lesson["date"]} '
+                                                           f'{nearest_lesson["beginLesson"]}').replace(tzinfo=TZ) > now:
+                        updater.bot.send_message(chat_id=chat_id, text=print_nearest_lesson(user_id))
+        timeout = 700
 
     threading.Timer(timeout, check_timetable).start()
 
