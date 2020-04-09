@@ -3,6 +3,7 @@ import arrow
 from config import ID1, ID2, TZ
 import logging
 
+
 def get_nearest_lesson():
     now = arrow.now(TZ)
     date_first = now.date()
@@ -13,12 +14,14 @@ def get_nearest_lesson():
     classes = r.json()
 
     for cls in classes:
-        beginLesson = arrow.get(f'{cls["date"]} {cls["beginLesson"]}').replace(tzinfo=TZ)
+        beginLesson = arrow.get(
+            f'{cls["date"]} {cls["beginLesson"]}').replace(tzinfo=TZ)
 
         if now <= beginLesson:
             return cls
 
     return {}
+
 
 def print_nearest_lesson():
     nearest_lesson = get_nearest_lesson()
@@ -29,3 +32,11 @@ def print_nearest_lesson():
            f'День недели: {nearest_lesson["dayOfWeekString"]}\n' \
            f'Начало: {nearest_lesson["beginLesson"]}\n' \
            f'Ссылка: {nearest_lesson["url1"]}'
+
+
+def get_students(student):
+    r = requests.get(
+        f'https://ruz.hse.ru/api/search?term={student}&type=student'
+    )
+    students = r.json()
+    return students
