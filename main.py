@@ -1,55 +1,50 @@
-import dateutil
-import telebot
+import logging
 import os
-from flask import Flask, request
+import threading
+import json
+
+import arrow
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, parsemode
+
 from config import TOKEN, TIMETABLE, TZ
 from data_catcher import get_nearest_lesson, print_nearest_lesson
-import threading
-import datetime
-import arrow
-from dateutil import tz
 
-bot = telebot.TeleBot(TOKEN)
-server = Flask(__name__)
-
-logger = telebot.logger
-telebot.logger.setLevel(logging.INFO)
+updater = Updater(token=TOKEN, use_context=True)
+dispatcher = updater.dispatcher
 
 chat_ids = set()
 
-
-@bot.message_handler(commands=['start', 'help'])
-def send_welcome(message):
-    bot.reply_to(message, 'Вы ввели help или start)0))0)))')
-
-
-@bot.message_handler(commands=['subscribe'])
-def subscribe_chat(message):
-    chat_ids.add(message.chat.id)
-    bot.send_message(message.chat.id, 'Теперь вы подписаны)0))00)))0)')
+with open('subscribed_chats.json', 'r') as ids_file:
+    data = json.load(ids_file)
+chat_ids = set(data)
 
 
-@bot.message_handler(commands=['getnext'])
-def send_nearest_lesson(message):
-    bot.send_message(message.chat.id, print_nearest_lesson())
+def start_help(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text='Вы ввели help или start)0))0)))')
 
 
-@bot.message_handler(func=lambda m: True)
-def echo_all(message):
-    bot.reply_to(message, message.text)
+def subscribe_chat(update, context):
+    chat_ids.add(update.message.chat_id)
+    with open("subscribed_chats.json", 'w') as ids_file:
+        json.dump(list(chat_ids), ids_file)
+
+    markup = InlineKeyboardMarkup([[InlineKeyboardButton(text='Расписание группы',
+                                                         callback_data='Группа')],
+                                   [InlineKeyboardButton(text='Индивидуальное расписание',
+                                                         callback_data='ФИО')]])
+    context.bot.send_message(
+        chat_id=update.message.chat_id,
+        text="Получать индивидуальное расписание или расписание группы?",
+        reply_markup=markup)
 
 
-@server.route('/' + TOKEN, methods=['POST'])
-def get_message():
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode('utf-8'))])
-    return '!', 200
+def send_nearest_lesson(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text=print_nearest_lesson())
 
 
-@server.route('/')
-def webhook():
-    bot.remove_webhook()
-    bot.set_webhook(url='https://ruzbot.herokuapp.com/' + TOKEN)
-    return 'Hello world!', 200
+def echo_all(update, context):
+    update.message.reply_text(update.message.text + '\nА ещё ты пидор')
 
 
 def check_timetable():
@@ -58,17 +53,30 @@ def check_timetable():
     now = arrow.now(TZ)
     date = now.date()
     for time in TIMETABLE:
-        if now.shift(minutes=+10) > arrow.get(f'{date} {time}', 'YYYY-M-D HH:mm').replace(tzinfo=TZ) > now:
-            cur = get_nearest_lesson()
-            if now.shift(minutes=+10) >= arrow.get(f'{cur["date"]} {cur["beginLesson"]}', 'YYYY.M.D HH:mm').replace(tzinfo=TZ) > now:
+        if now.shift(minutes=+10) > arrow.get(f'{date} {time}').replace(tzinfo=TZ) > now:
+            nearest_lesson = get_nearest_lesson()
+            if now.shift(minutes=+10) >= arrow.get(f'{nearest_lesson["date"]} '
+                                                   f'{nearest_lesson["beginLesson"]}').replace(tzinfo=TZ) > now:
                 for chat_id in chat_ids:
-                    bot.send_message(chat_id, print_nearest_lesson())
+                    updater.bot.send_message(chat_id=chat_id, text=print_nearest_lesson())
                 timeout = 700
 
     threading.Timer(timeout, check_timetable).start()
 
+start_handler = CommandHandler('start', start_help)
+help_handler = CommandHandler('help', start_help)
+subscribe_handler = CommandHandler('subscribe', subscribe_chat)
+getnext_handler = CommandHandler('getnext', send_nearest_lesson)
+echo_handler = MessageHandler(filters=Filters.all, callback=echo_all)
+
+dispatcher.add_handler(start_handler)
+dispatcher.add_handler(help_handler)
+dispatcher.add_handler(subscribe_handler)
+dispatcher.add_handler(getnext_handler)
+dispatcher.add_handler(echo_handler)
 
 check_timetable()
-print(__name__ == '__main__')
-if __name__ == '__main__':
-    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+PORT = int(os.environ.get('PORT', '8443'))
+updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=TOKEN)
+updater.bot.set_webhook('https://ruzbot.herokuapp.com/' + TOKEN)
+updater.idle()

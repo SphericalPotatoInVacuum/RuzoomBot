@@ -13,7 +13,7 @@ def get_nearest_lesson():
     classes = r.json()
 
     for cls in classes:
-        beginLesson = arrow.get(f'{cls["date"]} {cls["beginLesson"]}', 'YYYY.M.D HH:mm').replace(tzinfo=TZ)
+        beginLesson = arrow.get(f'{cls["date"]} {cls["beginLesson"]}').replace(tzinfo=TZ)
 
         if now <= beginLesson:
             return {'discipline': cls["discipline"], \

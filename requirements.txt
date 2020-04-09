@@ -1,6 +1,5 @@
 python-dateutil
 arrow
 pytz
-flask
-pyTelegramBotAPI
+python-telegram-bot
 requests
