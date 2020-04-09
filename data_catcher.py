@@ -40,3 +40,11 @@ def get_students(student):
     )
     students = r.json()
     return students
+
+
+def get_groups(group):
+    r = requests.get(
+        f'https://ruz.hse.ru/api/search?term={group}&type=group'
+    )
+    groups = r.json()
+    return groups
