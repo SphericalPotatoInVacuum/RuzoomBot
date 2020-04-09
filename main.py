@@ -13,11 +13,11 @@ from data_catcher import get_nearest_lesson, print_nearest_lesson, get_students,
 updater = Updater(token=TOKEN, use_context=True)
 dispatcher = updater.dispatcher
 
-chat_ids = set()
+chat_ids = dict()
 
 with open('subscribed_chats.json', 'r') as ids_file:
     data = json.load(ids_file)
-chat_ids = set(data)
+chat_ids = data
 
 
 def start_help(update, context):
@@ -37,8 +37,10 @@ def subscribe_chat(update, context):
     return 'Вопрос'
 
 
-def subscribe(id):
-    chat_ids.add(id)
+def subscribe(id, chat_id):
+    user_ids = chat_ids.get(chat_id, [])
+    if not id in user_ids:
+        chat_ids[chat_id] = user_ids + [id]
     with open('subscribed_chats.json', 'w') as ids_file:
         json.dump(list(chat_ids), ids_file)
 
@@ -62,7 +64,7 @@ def button(update, context):
         return 'ФИО'
     elif query[0] == 'GroupID' or query[0] == 'StudentID':
         if query[1] != '0':
-            subscribe(query[1])
+            subscribe(query[1], query[2])
             updater.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text='Ееее вы подписались!',
@@ -85,7 +87,7 @@ def credentialts(update, context):
     for student in students:
         markup.append([InlineKeyboardButton(
             text=f'{student["label"]}, {student["description"]}',
-            callback_data=f'StudentID {student["id"]}'
+            callback_data=f'StudentID {student["id"]} {update.message.chat_id}'
         )])
     markup.append([InlineKeyboardButton(
         text='Меня тут нет!',
@@ -107,7 +109,7 @@ def group(update, context):
     for group in groups:
         markup.append([InlineKeyboardButton(
             text=f'{group["label"]}, {group["description"]}',
-            callback_data=f'GroupID {group["id"]}'
+            callback_data=f'GroupID {group["id"]} {update.message.chat_id}'
         )])
     markup.append([InlineKeyboardButton(
         text='Моей группы тут нет!',
