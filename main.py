@@ -53,14 +53,12 @@ def button(update, context):
     if query[0] == 'Группа':
         updater.bot.send_message(
             chat_id=update.effective_chat.id,
-            text='Введите номер группы в формате БПМИ195.',
-            reply_markup=ForceReply())
+            text='Введите номер группы в формате БПМИ195')
         return 'Группа'
     elif query[0] == 'ФИО':
         updater.bot.send_message(
             chat_id=update.effective_chat.id,
-            text='Введите ФИО.',
-            reply_markup=ForceReply())
+            text='Введите ФИО')
         return 'ФИО'
     elif query[0] == 'GroupID' or query[0] == 'StudentID':
         if query[1] != '0':
