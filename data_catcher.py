@@ -16,19 +16,16 @@ def get_nearest_lesson():
         beginLesson = arrow.get(f'{cls["date"]} {cls["beginLesson"]}').replace(tzinfo=TZ)
 
         if now <= beginLesson:
-            return {'discipline': cls["discipline"], \
-                    'dayOfWeekString': cls["dayOfWeekString"], \
-                    'beginLesson': cls["beginLesson"], \
-                    'url1': cls["url1"],
-                    'date': cls["date"]}
+            return cls
 
     return {}
 
 def print_nearest_lesson():
-    cur = get_nearest_lesson()
-    if len(cur) == 0:
+    nearest_lesson = get_nearest_lesson()
+    if len(nearest_lesson) == 0:
         return 'Пар нет - иди спать!1!1!!!1!'
-    return f'Дисциплина: {cur["discipline"]}\n' \
-           f'День недели: {cur["dayOfWeekString"]}\n' \
-           f'Начало: {cur["beginLesson"]}\n' \
-           f'Ссылка: {cur["url1"]}'
+    return f'Дисциплина: {nearest_lesson["discipline"]}\n ' \
+           f'Тип заняти: {nearest_lesson["kindOfWork"]}\n' \
+           f'День недели: {nearest_lesson["dayOfWeekString"]}\n' \
+           f'Начало: {nearest_lesson["beginLesson"]}\n' \
+           f'Ссылка: {nearest_lesson["url1"]}'

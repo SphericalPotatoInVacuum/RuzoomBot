@@ -4,8 +4,8 @@ import threading
 import json
 
 import arrow
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, parsemode
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, ConversationHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, parsemode, ForceReply
 
 from config import TOKEN, TIMETABLE, TZ
 from data_catcher import get_nearest_lesson, print_nearest_lesson
@@ -26,7 +26,7 @@ def start_help(update, context):
 
 def subscribe_chat(update, context):
     chat_ids.add(update.message.chat_id)
-    with open("subscribed_chats.json", 'w') as ids_file:
+    with open('subscribed_chats.json', 'w') as ids_file:
         json.dump(list(chat_ids), ids_file)
 
     markup = InlineKeyboardMarkup([[InlineKeyboardButton(text='Расписание группы',
@@ -43,8 +43,29 @@ def send_nearest_lesson(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text=print_nearest_lesson())
 
 
+def button(update, context):
+    if update.callback_query.data == 'Группа':
+        update.bot.send_message(
+            chat_id=update.message.chat_id,
+            text='Введите номер группы в формате БПМИ195.',
+            reply_markup=ForceReply)
+    elif update.callback_query.data == 'ФИО':
+        update.bot.send_message(
+            chat_id=update.message.chat_id,
+            text='Введите ФИО.',
+            reply_markup=ForceReply)
+
+
 def echo_all(update, context):
     update.message.reply_text(update.message.text + '\nА ещё ты пидор')
+
+
+def credentialts(update, context):
+    pass
+
+
+def group(update, context):
+    pass
 
 
 def check_timetable():
@@ -68,12 +89,22 @@ help_handler = CommandHandler('help', start_help)
 subscribe_handler = CommandHandler('subscribe', subscribe_chat)
 getnext_handler = CommandHandler('getnext', send_nearest_lesson)
 echo_handler = MessageHandler(filters=Filters.all, callback=echo_all)
+subscriber_type_handler = CallbackQueryHandler(button)
+conv_handler = ConversationHandler(
+    entry_points=[subscriber_type_handler],
+    states={
+        'Группа': MessageHandler(filters=Filters.text, callback=group),
+        'ФИО': MessageHandler(filters=Filters.text, callback=credentialts)
+    },
+)
 
 dispatcher.add_handler(start_handler)
 dispatcher.add_handler(help_handler)
 dispatcher.add_handler(subscribe_handler)
 dispatcher.add_handler(getnext_handler)
 dispatcher.add_handler(echo_handler)
+
+
 
 check_timetable()
 PORT = int(os.environ.get('PORT', '8443'))
