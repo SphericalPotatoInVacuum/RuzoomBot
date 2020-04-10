@@ -28,7 +28,7 @@ def print_nearest_lesson(user_id=ID1):
     if len(nearest_lesson) == 0:
         return 'Пар нет - иди спать!1!1!!!1!'
     return f'Дисциплина: {nearest_lesson["discipline"]}\n' \
-           f'Тип заняти: {nearest_lesson["kindOfWork"]}\n' \
+           f'Тип занятия: {nearest_lesson["kindOfWork"]}\n' \
            f'День недели: {nearest_lesson["dayOfWeekString"]}\n' \
            f'Начало: {nearest_lesson["beginLesson"]}\n' \
            f'Ссылка: {nearest_lesson["url1"]}'
