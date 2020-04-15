@@ -336,8 +336,8 @@ app = Flask(__name__)
 
 @app.route('/')
 def basic_func():
-    return 'Hello, world!'
+    return 'Hello, world!', 200
 
 
 if __name__ == '__main__':
-    app.run(port=PORT, debug=True)
+    app.run(host='0.0.0.0', port=PORT, debug=True)
