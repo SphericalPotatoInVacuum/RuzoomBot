@@ -18,7 +18,7 @@ request_kwargs = {
     }
 }
 
-updater = Updater(token=TOKEN, request_kwargs=request_kwargs, use_context=True)
+updater = Updater(token=TOKEN, use_context=True)
 dispatcher = updater.dispatcher
 
 chat_ids = defaultdict(lambda: {'GroupId': [], 'StudentId': []})
