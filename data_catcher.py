@@ -29,14 +29,22 @@ def get_nearest_lesson(id_type, user_id=ID1):
 
 def print_nearest_lesson(id_type, user_id=ID1):
     nearest_lesson = get_nearest_lesson(id_type, user_id)
+
     if len(nearest_lesson) == 0:
         return 'Сегодня и завтра больше пар нет, можете отдыхать :)'
-    return f'Дисциплина: {nearest_lesson["discipline"]}\n' \
-           f'Преподаватель: {nearest_lesson["lecturer"]}\n'\
-           f'Тип занятия: {nearest_lesson["kindOfWork"]}\n' \
-           f'День недели: {nearest_lesson["dayOfWeekString"]}\n' \
-           f'Начало: {nearest_lesson["beginLesson"]}\n' \
-           f'Ссылка: {nearest_lesson["url1"]}'
+
+    response = f'Дисциплина: {nearest_lesson["discipline"]}\n' \
+               f'Преподаватель: {nearest_lesson["lecturer"]}\n'\
+               f'Тип занятия: {nearest_lesson["kindOfWork"]}\n' \
+               f'День недели: {nearest_lesson["dayOfWeekString"]}\n' \
+               f'Начало: {nearest_lesson["beginLesson"]}
+    
+    if (nearest_lesson['auditorium'].split(' ')[0] != 'Online'):
+        response += f'\nАудитория: {nearest_lesson["auditorium"]}'
+    else:
+        response += f'\nСсылка: {nearest_lesson["url1"]}'
+
+    return response
 
 
 def get_names(name, name_type):
