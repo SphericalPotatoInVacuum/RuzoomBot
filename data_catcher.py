@@ -39,7 +39,7 @@ def print_nearest_lesson(id_type, user_id=ID1):
                f'День недели: {nearest_lesson["dayOfWeekString"]}\n' \
                f'Начало: {nearest_lesson["beginLesson"]}'
     
-    if (nearest_lesson['auditorium'].split(' ')[0] != 'Online'):
+    if (nearest_lesson['auditorium'].split(' ')[0].upper() != 'ONLINE'):
         response += f'\nАудитория: {nearest_lesson["auditorium"]}'
     else:
         response += f'\nСсылка: {nearest_lesson["url1"]}'

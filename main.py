@@ -2,7 +2,6 @@ import os
 import threading
 
 import arrow
-from flask import Flask
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, ConversationHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove
 
@@ -331,14 +330,3 @@ else:
     updater.bot.set_webhook('https://ruzbot.herokuapp.com/' + TOKEN)
     updater.idle()
 
-
-app = Flask(__name__)
-
-
-@app.route('/')
-def basic_func():
-    return 'Hello, world!', 200
-
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=PORT, debug=True)
