@@ -37,7 +37,7 @@ def print_nearest_lesson(id_type, user_id=ID1):
                f'Преподаватель: {nearest_lesson["lecturer"]}\n'\
                f'Тип занятия: {nearest_lesson["kindOfWork"]}\n' \
                f'День недели: {nearest_lesson["dayOfWeekString"]}\n' \
-               f'Начало: {nearest_lesson["beginLesson"]}
+               f'Начало: {nearest_lesson["beginLesson"]}'
     
     if (nearest_lesson['auditorium'].split(' ')[0] != 'Online'):
         response += f'\nАудитория: {nearest_lesson["auditorium"]}'

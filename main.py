@@ -257,7 +257,8 @@ def check_timetable():
                     updater.bot.send_message(
                         chat_id=chat_id,
                         text=f'Расписание для: {user_name}\n'
-                             f'{print_nearest_lesson(id_type, user_id)}'
+                             f'{print_nearest_lesson(id_type, user_id)}',
+                        disable_web_page_preview=True
                     )
                     timeout = 700
 
