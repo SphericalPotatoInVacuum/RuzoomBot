@@ -9,20 +9,11 @@ from config import TOKEN, TZ, proxy_url, proxy_user, proxy_pass
 from data_catcher import get_nearest_lesson, print_nearest_lesson, get_names
 from collections import defaultdict
 
-request_kwargs = {
-    'proxy_url': proxy_url,
-    'urllib3_proxy_kwargs': {
-        'username': proxy_user,
-        'password': proxy_pass,
-    }
-}
-
 updater = Updater(token=TOKEN, use_context=True)
 dispatcher = updater.dispatcher
 
 chat_ids = defaultdict(lambda: {'GroupId': [], 'StudentId': []})
 tmp = {}
-
 
 def subscribe(id_type, ruz_id, chat_id):
     global tmp
