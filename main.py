@@ -6,14 +6,18 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove
 
 from config import TOKEN, TZ, proxy_url, proxy_user, proxy_pass
-from data_catcher import get_nearest_lesson, print_nearest_lesson, get_names
+from data_catcher import get_nearest_lesson, get_names
+from utils import nearest_lesson_to_str
 from collections import defaultdict
+from enum import Enum, auto
+from typing import Dict
 
 updater = Updater(token=TOKEN, use_context=True)
 dispatcher = updater.dispatcher
 
-chat_ids = defaultdict(lambda: {'GroupId': [], 'StudentId': []})
-tmp = {}
+chat_ids: defaultdict = defaultdict(lambda: {'GroupId': [], 'StudentId': []})
+tmp: Dict[str, str] = {}
+
 
 def subscribe(id_type, ruz_id, chat_id):
     global tmp
@@ -53,8 +57,7 @@ def start_help(update, context):
         '/subscribe - подписать чат на уведомления о приближающихся парах для группы или студента\n'
         '/unsubscribe - отписать чат от уведомлений\n'
         '/getnext - получить информацию о ближайшей паре для группы или студента, на которых подписан чат\n'
-        'По всем вопросам обращаться к @sphericalpotatoinvacuum, @allisyonok или @grenlayk'
-    )
+        'По всем вопросам обращаться к @sphericalpotatoinvacuum, @allisyonok или @grenlayk')
 
 
 def unsubscribe_chat(update, context):
@@ -122,7 +125,8 @@ def button(update, context):
                 text = 'От какого студента Вы хотите отписаться?'
                 chosen_type = 'StudentChosen'
             markup = []
-            for (ruz_id, ruz_name) in chat_ids[update.effective_chat.id][id_type]:
+            for (ruz_id,
+                 ruz_name) in chat_ids[update.effective_chat.id][id_type]:
                 markup.append([InlineKeyboardButton(
                     text=f'{ruz_name}',
                     callback_data=f'{chosen_type} {ruz_id} '
@@ -168,8 +172,7 @@ def button(update, context):
             if len(chat_ids[chat_id][id_type]) == 1:
                 for (user_id, user_name) in chat_ids[chat_id][id_type]:
                     query.edit_message_text(
-                        text=f'Расписание для: {user_name}\n{print_nearest_lesson(id_type, user_id)}'
-                    )
+                        text=f'Расписание для: {user_name}\n{print_nearest_lesson(id_type, user_id)}')
                 return ConversationHandler.END
 
             markup = []
@@ -269,24 +272,39 @@ unsubscribe_handler = CommandHandler('unsubscribe', unsubscribe_chat)
 getnext_handler = CommandHandler('getnext', get_next)
 callback_handler = CallbackQueryHandler(button)
 
-SUBQUESTION, SUBGROUP, SUBSTUDENT, SUBCHOOSE, UNSUB, PRINTNEXT = range(6)
+
+class ConvoState(Enum):
+    SUBQUESTION = auto()
+    SUBGROUP = auto()
+    SUBSTUDENT = auto()
+    SUBCHOOSE = auto()
+    UNSUB = auto()
+    PRINTNEXT = auto()
+
 
 sub_conv_handler = ConversationHandler(
     entry_points=[subscribe_handler],
     states={
-        SUBQUESTION: [callback_handler],
-        SUBGROUP: [MessageHandler(filters=Filters.text, callback=to_ruz('group'))],
-        SUBSTUDENT: [MessageHandler(filters=Filters.text, callback=to_ruz('student'))],
-        SUBCHOOSE: [callback_handler]
-    },
-    fallbacks=[CommandHandler('cancel', cancel)],
-    allow_reentry=True
-)
+        ConvoState.SUBQUESTION: [callback_handler],
+        ConvoState.SUBGROUP: [
+            MessageHandler(
+                filters=Filters.text,
+                callback=to_ruz('group'))],
+        ConvoState.SUBSTUDENT: [
+            MessageHandler(
+                filters=Filters.text,
+                callback=to_ruz('student'))],
+        ConvoState.SUBCHOOSE: [callback_handler]},
+    fallbacks=[
+        CommandHandler(
+            'cancel',
+            cancel)],
+    allow_reentry=True)
 
 unsub_conv_handler = ConversationHandler(
     entry_points=[unsubscribe_handler],
     states={
-        UNSUB: [callback_handler],
+        ConvoState.UNSUB: [callback_handler],
     },
     fallbacks=[CommandHandler('cancel', cancel)],
     allow_reentry=True
@@ -295,8 +313,8 @@ unsub_conv_handler = ConversationHandler(
 next_conv_handler = ConversationHandler(
     entry_points=[getnext_handler],
     states={
-        SUBQUESTION: [callback_handler],
-        PRINTNEXT: [callback_handler],
+        ConvoState.SUBQUESTION: [callback_handler],
+        ConvoState.PRINTNEXT: [callback_handler],
     },
     fallbacks=[CommandHandler('cancel', cancel)],
     allow_reentry=True
@@ -320,4 +338,3 @@ else:
     updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=TOKEN)
     updater.bot.set_webhook('https://ruzbot.herokuapp.com/' + TOKEN)
     updater.idle()
-

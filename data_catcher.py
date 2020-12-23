@@ -3,20 +3,21 @@ from config import TZ
 import requests
 from utils import transfrom_id_type
 
-def get_lessons_from_ruz(id_type: string, user_id: string,
+
+def get_lessons_from_ruz(id_type: str, user_id: str,
                          start_search_date: arrow.Arrow,
                          finish_search_date: arrow.Arrow) -> list:
     """Return list of lessons of student/group(defined by id_type) with id user_id,
        wich will be holded from start_search_date to finish_search_date"""
-    ruz_response =
-    requests.get(
+    ruz_response = requests.get(
         f'https://ruz.hse.ru/api/schedule/{id_type}/{user_id}?'
-        f'start={date_first.strftime("%Y.%m.%d")}'
-        f'&finish={date_second.strftime("%Y.%m.%d")}&lng=1')
+        f'start={start_search_date.strftime("%Y.%m.%d")}'
+        f'&finish={finish_search_date.strftime("%Y.%m.%d")}&lng=1'
+    )
     return ruz_response.json()
 
 
-def get_nearest_lesson(id_type: string, user_id: string) -> dict:
+def get_nearest_lesson(id_type: str, user_id: str) -> dict:
     """Returns the closest lesson for today and tomorrow
        for student/group(defined by id_type) with id user_id,
        or an empty lesson if there are no lessons."""
@@ -24,20 +25,21 @@ def get_nearest_lesson(id_type: string, user_id: string) -> dict:
     start_date = current_moment.date()
     finish_date = current_moment.shift(days=+1).date()
 
-    id_type = transfrom_id_type(id_type) 
+    id_type = transfrom_id_type(id_type)
     users_classes = get_lessons_from_ruz(id_type, user_id,
                                          start_date, finish_date)
 
     for users_class in users_classes:
         lesson_start = arrow.get(
-                      f'{users_class["date"]} {users_class["beginLesson"]}').replace(tzinfo=TZ)
+            f'{users_class["date"]} {users_class["beginLesson"]}').replace(tzinfo=TZ)
 
         if current_moment <= lesson_start:
             return users_class
     return {}
 
 
-def get_names(name, name_type):
+def search_names(name, name_type):
+    """Search ruz database for student or groups and return the results."""
     r = requests.get(
         f'https://ruz.hse.ru/api/search?term={name}&type={name_type}'
     )

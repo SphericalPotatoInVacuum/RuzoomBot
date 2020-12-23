@@ -2,7 +2,7 @@ def nearest_lesson_to_str(nearest_lesson: dict) -> str:
     """Returns a string containing the output of
        the closest lesson for today and tomorrow for
        student/group(defined by id_type) with id user_id."""
-     if len(nearest_lesson) == 0:
+    if len(nearest_lesson) == 0:
         return 'Сегодня и завтра больше пар нет, можете отдыхать :)'
 
     response = f'Дисциплина: {nearest_lesson["discipline"]}\n' \
@@ -10,7 +10,7 @@ def nearest_lesson_to_str(nearest_lesson: dict) -> str:
                f'Тип занятия: {nearest_lesson["kindOfWork"]}\n' \
                f'День недели: {nearest_lesson["dayOfWeekString"]}\n' \
                f'Начало: {nearest_lesson["beginLesson"]}'
-    
+
     if nearest_lesson['url1'] != '':
         response += f'\nСсылка: {nearest_lesson["url1"]}'
 
@@ -20,7 +20,7 @@ def nearest_lesson_to_str(nearest_lesson: dict) -> str:
     return response
 
 
-def transfrom_id_type(id_type: string) -> string:
+def transfrom_id_type(id_type: str) -> str:
     """Changes the id_type format to the format that
        ruz_api requires or raises the exception."""
     if id_type == 'GroupId':
